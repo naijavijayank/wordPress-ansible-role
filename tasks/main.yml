@@ -9,10 +9,20 @@
     shell: |
       curl https://wordpress.org/latest.tar.gz | sudo -u www-data tar zx -C /srv/www
 
-  - name: copy wordpress.conf into apache2
+  - name: copy wordpress.conf into apache2 sites-available
     copy:
       src: wordpress.conf
-      dest: /etc/apache2/sites-available
+      dest: /etc/apache2/sites-available/000-default.conf
+
+  - name: update WordPress config
+    copy:
+      src: wp-config.php
+      dest: /srv/www/wordpress/wp-config.php
+
+  - name: copy wordpress.conf into apache2 sites-enabled
+    copy:
+      src: wordpress.conf
+      dest: /etc/apache2/sites-enabled/000-default.conf
 
   - name: Enable rewrite module
     community.general.apache2_module:
@@ -24,10 +34,6 @@
     shell: |
       sudo a2ensite wordpress
     notify: Restart apache2
-
-  - name: Disable default config
-    shell: |
-      a2dissite 000-default
 
   - name: Configure wp-config.php
     copy:
