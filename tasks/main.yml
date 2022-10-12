@@ -1,0 +1,56 @@
+---
+  - name: Create WordPress deployment directory
+    file:
+      path: /srv/www
+      owner: www-data
+      state: directory
+
+  - name: Downloading WordPress
+    shell: |
+      curl https://wordpress.org/latest.tar.gz | sudo -u www-data tar zx -C /srv/www
+
+  - name: copy wordpress.conf into apache2
+    copy:
+      src: wordpress.conf
+      dest: /etc/apache2/sites-available
+
+  - name: Enable rewrite module
+    community.general.apache2_module:
+      state: present
+      name: rewrite
+    notify: Restart apache2
+
+  - name: Enable wordpress module
+    shell: |
+      sudo a2ensite wordpress
+    notify: Restart apache2
+
+  - name: Disable default config
+    shell: |
+      a2dissite 000-default
+
+  - name: Configure wp-config.php
+    copy:
+      src: /srv/www/wordpress/wp-config-sample.php
+      dest: /srv/www/wordpress/wp-config.php
+      owner: www-data
+      remote_src: yes
+      
+  - name: Create a database of name wordpress
+    mysql_db:
+      name: wordpress
+      state: present
+      login_unix_socket: /run/mysqld/mysqld.sock
+
+  - name: Create an user named wordpress
+    mysql_user:
+      name: wordpress
+      password: test
+      priv:
+        'wordpress.*': 'SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER'
+      state: present
+    become: yes
+
+
+
+
