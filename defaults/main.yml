@@ -1,0 +1,5 @@
+---
+db_name: 'wordpress'
+db_user: 'wordpress'
+db_pass: 'test'
+config_dest: /srv/www/wordpress/wp-config.php
