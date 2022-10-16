@@ -15,9 +15,12 @@
       dest: /etc/apache2/sites-available/000-default.conf
 
   - name: update WordPress config
-    copy:
-      src: wp-config.php
-      dest: /srv/www/wordpress/wp-config.php
+    ansible.builtin.template:
+      src: wp-config.php.j2
+      dest: "{{config_dest}}"
+      owner: www-data
+      group: www-data
+    notify: Restart apache2
 
   - name: copy wordpress.conf into apache2 sites-enabled
     copy:
@@ -34,13 +37,6 @@
     shell: |
       sudo a2ensite wordpress
     notify: Restart apache2
-
-  - name: Configure wp-config.php
-    copy:
-      src: /srv/www/wordpress/wp-config-sample.php
-      dest: /srv/www/wordpress/wp-config.php
-      owner: www-data
-      remote_src: yes
       
   - name: Create a database of name wordpress
     mysql_db:
